@@ -103,7 +103,11 @@ const [error, setError] = useState({
           const errorCode = error.code;
           const errorMessage = error.message;
           console.log(errorMessage);
-          console.log(errorCode);
+          const gotError = {
+            status: true,
+            message: errorMessage
+          }
+          setError(gotError)
         });
     }
 
