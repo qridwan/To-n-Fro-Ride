@@ -1,39 +1,51 @@
 .login-form {
-    font-family: sans-serif;
-    text-align: center;
-    margin: 0 ;
-  }
-  
-  .login-form button {
-    padding: 10px 50px;
-    background-color: none;
-    color: black;
-    border: 2px solid black;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  .login-form button:hover {
-    padding: 12px 55px;
-    background-color: green;
-  }
-  
-  form {
-    width: 60%;
-    background-color: rgb(255, 255, 255);
-    margin: 30px auto;
-    border: 1px solid gray;
-    border-radius: 5px;
-    padding: 40px 5px;
-  }
-  input {
-    padding: 10px;
-    border-radius: 2px;
-    border: none;
-    border-bottom: 1px solid gray;
-  }
-  
-  label{
+  text-align: center;
+  height: 100vh;
+}
+
+.login-form button {
+  padding: 10px 80px;
+  background-color: none;
   color: black;
-  font-size: 20px;
-  font-weight: 550
+  border: 1px solid rgba(0, 0, 0, 0.507);
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600
+}
+.login-form button:hover {
+  padding: 12px 105px;
+  background-color: rgb(144, 235, 238);
+}
+
+.login-form form {
+  width: 80%;
+  background-color: rgb(255, 255, 255);
+  margin: 30px auto;
+  border: 1px solid gray;
+  border-radius: 15px;
+  padding: 40px 5px;
+}
+.login-form input {
+  display: block;
+  width: 55%;
+  padding: 10px;
+  margin: 5px auto;
+  border-radius: 2px;
+  border: none;
+  border-bottom: 1px solid gray;
+}
+
+.login-form small {
+color: rgb(207, 12, 12);
+}
+.login-form small::before {
+  display: inline;
+  content: " ❌ "
+}
+
+.login-form span {
+  color: rgb(33, 14, 204);
+  text-decoration: underline;
+  cursor: pointer;
   }

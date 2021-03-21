@@ -2,20 +2,22 @@ import React, { useContext, useState } from "react";
 import firebase from "firebase/app";
 import "firebase/auth";
 import firebaseConfig from "./Firebase.config";
-import './LoginForm.css'
+import "./LoginForm.css";
 import { useHistory, useLocation } from "react-router";
+import { useForm } from "react-hook-form";
 import { UserContext } from "../../App";
+import { faFacebookF, faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
-function LoginForm() {
+const LoginForm = () => {
   const history = useHistory();
   const location = useLocation();
   const { from } = location.state || { from: { pathname: "/" } };
   const [isLoggedIn, setIsLoggedIn] = useContext(UserContext);
-const [user, setUser] = useState({});
-  const [newUser, setNewUser] = useState(false);
+
   const googleProvider = new firebase.auth.GoogleAuthProvider();
   const fbProvider = new firebase.auth.FacebookAuthProvider();
   const handleGoogleSignIn = () => {
@@ -24,11 +26,10 @@ const [user, setUser] = useState({});
       .signInWithPopup(googleProvider)
       .then((result) => {
         const user = result.user;
-        console.log(user);
         const { displayName, email } = user;
         const SignedInfo = {
           name: displayName,
-          email: email
+          email: email,
         };
         setIsLoggedIn(SignedInfo);
         history.replace(from);
@@ -46,162 +47,164 @@ const [user, setUser] = useState({});
       .auth()
       .signInWithPopup(fbProvider)
       .then((result) => {
-        const { displayName, email, photoURL } = result.user;
-        const isSignedIn = {
-          isSigned: true,
+        const user = result.user;
+        console.log(user);
+        const { displayName, email } = user;
+        const SignedInfo = {
           name: displayName,
           email: email,
-          photo: photoURL
         };
-        console.log(result);
-        setUserInfo(isSignedIn);
+        setIsLoggedIn(SignedInfo);
+        history.replace(from);
       })
       .catch((error) => {
-        console.log(error);
-        console.log(error.message);
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        const email = error.email;
+        // console.log(errorCode, errorMessage, email);
       });
   };
 
-
-  const handleBlur = (e) => {
-    console.log(e.target.name, e.target.value);
-    let fieldValid = false;
-    if (e.target.name === "email") {
-      fieldValid = /\S+@\S+\.\S+/.test(e.target.value.toLowerCase());
-      // console.log(fieldValid);
+  //=========================sign || register form setup==========================
+  const { register, handleSubmit, errors } = useForm(); // initialize the hook
+const [error, setError] = useState({
+  status: false,
+  message: ""
+})
+  const onSubmit = (data) => {
+    console.log(data.fullname);
+    if (newUser && data.email && data.password) {
+      firebase
+        .auth()
+        .createUserWithEmailAndPassword(data.email, data.password)
+        .then((userCredential) => {
+          let user = userCredential.user;
+          user = firebase.auth().currentUser;
+          user
+            .updateProfile({
+              displayName: `${data.fullname}`,
+            })
+            .then(function () {
+              console.log("Update successful.");
+              const { displayName, email } = user;
+              const SignedInfo = {
+                name: displayName,
+                email: email,
+              };
+              setIsLoggedIn(SignedInfo);
+              history.replace(from);
+            })
+            .catch(function (error) {
+              console.log("An error happened.");
+            });
+          console.log(user);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.log(errorMessage);
+          console.log(errorCode);
+        });
     }
-    if (e.target.name === "password") {
-      //script for min 8 letter password, with at least a symbol, upper and lower case letters and a number
-      fieldValid = /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(
-        e.target.value
-      );
-      // console.log(fieldValid);
-    }
-    if (e.target.name === "name") {
-      fieldValid = e.target.value;
-    }
 
-    if (fieldValid) {
-      const newUserInfo = { ...userInfo };
-
-      newUserInfo[e.target.name] = e.target.value;
-      console.log(newUserInfo);
-      setUserInfo(newUserInfo);
-      // console.log(userInfo);
+    if (!newUser && data.email && data.password) {
+      firebase
+        .auth()
+        .signInWithEmailAndPassword(data.email, data.password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          const { displayName, email } = user;
+          const SignedInfo = {
+            name: displayName,
+            email: email,
+          };
+          setIsLoggedIn(SignedInfo);
+          history.replace(from);
+        })
+        .catch((error) => {
+          const errorMessage = error.message;
+          const gotError = {
+            status: true,
+            message: errorMessage
+          }
+          setError(gotError)
+        });
     }
   };
 
-  const handleSubmit = (e) => {
-    if (newUser && userInfo.email && userInfo.password) {
-      firebase
-        .auth()
-        .createUserWithEmailAndPassword(userInfo.email, userInfo.password)
-        .then((res) => {
-          const newUserInfo = { ...userInfo };
-          newUserInfo.error = "";
-          newUserInfo.success = true;
-          setUserInfo(newUserInfo);
-          updateUserInfo(userInfo.name);
-          // console.log(userInfo);
-        })
-        .catch((error) => {
-          const newUserInfo = { ...userInfo };
-          newUserInfo.error = error.message;
-          newUserInfo.success = false;
-          setUserInfo(newUserInfo);
-          // console.log(userInfo);
-        });
-    }
-    if (!newUser && userInfo.email && userInfo.password) {
-      firebase
-        .auth()
-        .signInWithEmailAndPassword(userInfo.email, userInfo.password)
-        .then((res) => {
-          const newUserInfo = { ...userInfo };
-          console.log(userInfo.name);
-          newUserInfo.error = "";
-          newUserInfo.success = true;
-          setUserInfo(newUserInfo);
-          console.log(res.user);
-        })
-        .catch((error) => {
-          const newUserInfo = { ...userInfo };
-          newUserInfo.error = error.message;
-          newUserInfo.success = false;
-          setUserInfo(newUserInfo);
-        });
-    }
-    e.preventDefault();
+  const [newUser, setNewUser] = useState(true);
+  const handleLogin = () => {
+    setNewUser(false);
+  };
+  const handleSignUp = () => {
+    setNewUser(true);
   };
 
   return (
     <div className="login-form">
-        <form>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        {newUser && (
           <>
-            {" "}
             <input
-              type="checkbox"
-              onChange={() => setNewUser(!newUser)}
-              name="newUser"
-              label=""
-            />
-            <label htmlFor="newUser">New User Signup</label>
-            <br />
-            {newUser && (
-              <>
-              <h2>Create an account </h2>
-              <input
-                onBlur={handleBlur}
-                type="text"
-                name="name"
-                placeholder="Your name"
-              />
-              </>
-            )}
-            <br />
-            <br />
-            <input
-              onBlur={handleBlur}
-              type="email"
-              name="email"
-              placeholder="Your Email"
-            />
-            <br />
-            <br />
-            <input
-              onBlur={handleBlur}
-              type="password"
-              name="password"
-              placeholder="Your Password"
-            />
-            <br />
-            <br />
-            {newUser ? (
-              <>
-              
-              <input onClick={handleSubmit} type="submit" value="Sign Up" />
-              </>
-            ) : (
-              <input onClick={handleSubmit} type="submit" value="Login" />
-            )}
+              name="fullname"
+              placeholder="Full Name"
+              ref={register({ required: true })}
+            />{" "}
+            {errors.fullname && <small>Full-name is required.</small>}
           </>
-        </form>
-
-      {isLoggedIn.name && (
-        <input onClick={handleSignOut} type="submit" value="Log Out" />
-      )}
-      <p>{user.error}</p>
+        )}
+        <input
+          name="email"
+          placeholder="Your Email"
+          ref={register({ required: true, pattern: /\S+@\S+\.\S+/ })}
+        />
+        {errors.email && <small>Give a valid email!</small>}
+        <input
+          name="password"
+          placeholder="Password"
+          type="password"
+          ref={register({
+            pattern: /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/,
+          })}
+        />
+        {errors.password && (
+          <small>
+            Minimum 8 letters password, with at least a symbol, upper and
+            lowercase and a digit
+          </small>
+        )}
+        <br />
+        {newUser ? (
+          <input type="submit" value="Register" />
+        ) : (
+          <input type="submit" value="Login" />
+        )}
+        {newUser ? (
+          <h6>
+            Already have an account? <span onClick={handleLogin}>Login</span>{" "}
+          </h6>
+        ) : (
+          <h6>
+            Create New Account? <span onClick={handleSignUp}> Register</span>{" "}
+          </h6>
+        )}
+        {error.status && <small>{error.message}</small>}
+      </form>
 
       {/* google login */}
       {/* {userInfo.isSigned === false ? ( */}
-        <button onClick={handleGoogleSignIn}>Sign In with GOOGLE</button>
-      
-      <br />
-      <br />
-        <button onClick={handleFbSignIn}>Sign In with Facebook</button>
+      <button onClick={handleGoogleSignIn}>
+        {" "}
+        <FontAwesomeIcon className="text-success" icon={faGoogle} /> Sign In
+      </button>
 
-      {/* <h4>Allready have an account? <span onChange={() => setNewUser(!newUser)}>Login</span></h4> */}
+      <br />
+      <br />
+      <button onClick={handleFbSignIn}>
+        {" "}
+        <FontAwesomeIcon className="text-primary" icon={faFacebookF} /> Sign In
+      </button>
     </div>
   );
-      }
+};
 export default LoginForm;

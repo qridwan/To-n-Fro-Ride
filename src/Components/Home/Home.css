@@ -1,6 +1,14 @@
-.home{
-    height:100vh;
-    background-image: url("../../images/Bg.png");
-    background-repeat: no-repeat;
-    background-size: cover;
+.home {
+  margin: auto 0;
+  height: 100vh;
+  width: 100%;
+}
+.card-body:hover {
+  background-color: rgb(16, 95, 105) !important;
+}
+@media only screen and (max-width: 800px) {
+  .home {
+    height: 100%;
+    width: 100%;
+  }
 }

@@ -1,0 +1,13 @@
+.app {
+  width: 100%;
+    margin: auto 0;
+    background-image: url("./images/bgcity.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  @media only screen and (min-width: 800px) {
+    .app {
+      height: 100%;
+    }
+  }
